@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SchoolCycle</title>
+
+    <base target="_top" />
+    <link rel="icon" href="https://cdn.glitch.global/f42708b9-0c54-47f0-8465-2d592170f73f/SchoolCycleLogo.svg?v=1702831555917">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <link rel="stylesheet" href="style.css" />
+    <link href="libraries/bootstrap.min.css" rel="stylesheet" />
+    <script src="libraries/bootstrap.bundle.min.js"></script>
+    <script src="libraries/jquery-3.7.1.min.js"></script>
+    <script src="libraries/popper.min.js"></script>
+    <script src="libraries/firebase-app.js"></script>
+    <script src="libraries/firebase-auth.js"></script>
+    <script src="libraries/firebase-database.js"></script>
+    <script defer src="libraries/gapi.js"></script>
+    <script defer src="libraries/gsi.js"></script>
+    <script defer src="schoolCycle.js"></script>
+    <script defer src="user/user.js"></script>
+  </head>
+  
+  <body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-dark bg-dark">
+      <span class="navbar-brand mb-0 h1">SchoolCycle</span>
+
+      <!-- Logged in -->
+      <span class="navbar-text" id="logoutModule">
+        <img id="loggedInAsImage" />
+        <span id="loggedInAs"></span>
+        <button class="btn btn-danger" id="logout">Logout</button>
+      </span>
+
+      <!-- Not Logged In -->
+      <span class="navbar-text" id="loginModule">
+        <button class="btn btn-primary" id="signin">Sign in with Google</button>
+      </span>
+    </nav>
+    
+    <!-- Alert Container -->
+    <div class="alert-container">
+      <div class="container">
+          <div class="col" id="manage-alert-container"></div>
+      </div>
+    </div>
+    
+    <div class="container" id="main">
+      
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="basics-tab" data-bs-toggle="tab" data-bs-target="#scheduleTab" type="button" role="tab" aria-controls="basics" aria-selected="true" >
+            Schedule
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="days-tab" data-bs-toggle="tab" data-bs-target="#multicyclicTab" type="button" role="tab" aria-controls="days" aria-selected="false" >
+            Multi-Cyclic
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#editTab" type="button" role="tab" aria-controls="schedules" aria-selected="false" >
+            Edit
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#deleteTab" type="button" role="tab" aria-controls="schedules" aria-selected="false" >
+            Delete
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content" id="myTabContent">
+        
+          <!--    **************************     
+
+                        Schedule Tab 
+
+                  **************************  -->  
+        
+        <div class="tab-pane fade container show active" id="scheduleTab" role="tabpanel" aria-labelledby="scheduleTab" >
+
+          <div class="row mt-3">
+            <div class="col" id="defaultSelectorDiv">
+              <p>
+                Your school has multiple possible schedules. Select the one that applies to you.
+              </p>
+              <select class="form-select" id="defaultSelector" onchange="defaultSelectorChanged()"></select>
+              <hr>
+            </div>
+          </div>
+          
+          <div class="row mb-3 mt-3">
+            <div class="col">
+              <select class="form-select" id="schedulesDropDown" onchange="schedulesDropDownChanged()"></select>
+            </div>
+            <div class="col">
+              <div class="btn-group" role="group" aria-label="Schedule Buttons">
+                <button type="button" class="btn btn-primary" id="loadSchedule" disabled onclick="loadSchedule()">Load</button>
+                <button type="button" class="btn btn-success" id="saveScheduleAs" onclick="(()=>{$('#saveAsModal').modal('show')})()">Save As...</button>
+                <button type="button" class="btn btn-success" id="saveSchedule" disabled onclick="(()=>{$('#updateModalName').text($('#schedulesDropDown').find(':selected').val());$('#updateModal').modal('show')})()">Update...</button>
+                <button type="button" class="btn btn-danger" id="deleteSchedule" disabled onclick="(()=>{$('#deleteModalName').text($('#schedulesDropDown').find(':selected').val());$('#deleteModal').modal('show')})()">Delete...</button>
+              </div>
+            </div>
+            <div class="col">
+              <div class="btn-group" role="group" aria-label="Schedule Buttons">
+                <button type="button" class="btn btn-secondary" id="lockTimes" onclick="toggleLock()" style="width:130px">Unlock Times</button>
+                <button type="button" class="btn btn-warning" id="clearTableButton" onclick="$('.schedule-tab-table-input').val('')" style="width:130px">Clear Table</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-8" id="differentTimesDayRadio" style="display:none;">
+            </div>
+          </div>
+
+          <div class="row" style="overflow:auto;" id="defaultScheduleDiv">
+          </div>
+          
+          <div class="row mt-3" id="datesRow">
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">Start Date</span>
+                <input type="date" class="form-control" id="startDateInput">
+              </div>
+            </div>
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">End Date</span>
+                <input type="date" class="form-control" id="endDateInput">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3" id="addToCalendarRow">
+            <div class="col">
+              <select class="form-select calendarSelector" id="scheduleTabCalendarSelector"></select>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" type="button" id="addEventsButton" onclick="addEventsButton()">
+                Add to Google Calendar...
+              </button>
+            </div>
+          </div>
+          
+        </div>
+        
+          <!--    **************************     
+
+                       Multi-Cyclic Tab 
+
+                  **************************  -->  
+        
+        <div class="tab-pane fade container" id="multicyclicTab" role="tabpanel" aria-labelledby="multicyclicTab" >
+          <div class="row mb-3 mt-3">
+            <div class="col">
+              <select class="form-select" id="frequencySelect" onchange="frequencySelectChanged()">
+                <option value="0">Cyclic</option>
+                <option value="1">Bi-Cyclic</option>
+                <option value="2">Tri-Cyclic</option>
+                <option value="3">Tetra-Cyclic</option>
+              </select>
+            </div>
+            <div class="col">
+              <select class="form-select" id="frequencyCycleSelect">
+                <option value="0">Every Cycle</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="row" style="overflow:auto;" id="multiScheduleDiv">
+          </div>
+          
+          
+          <div class="row mt-3" id="multiDatesRow">
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">Start Date</span>
+                <input type="date" class="form-control" id="startDateMulti">
+              </div>
+            </div>
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">End Date</span>
+                <input type="date" class="form-control" id="endDateMulti">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3" id="multiAddToCalendarRow">
+            <div class="col">
+              <select class="form-select calendarSelector" id="multiCalendarSelector"></select>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" type="button" id="multiAddEventsButton" onclick="addMultiEventsButton()">
+                Add to Google Calendar...
+              </button>
+            </div>
+          </div>
+        </div>
+      
+      
+        
+        <!--    **************************     
+  
+                        Edit Tab 
+
+                **************************  -->  
+        
+        <div class="tab-pane fade container" id="editTab" role="tabpanel" aria-labelledby="editTab" >
+          <div class="row mt-3">
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">Start Date</span>
+                <input type="date" class="form-control" id="startDateEdit">
+              </div>
+            </div>
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">End Date</span>
+                <input type="date" class="form-control" id="endDateEdit">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col">
+              <select class="form-select calendarSelector" id="editTabCalendarSelector"></select>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" type="button" id="editTabGetEventsButton" onclick="getEventsToEdit()">
+                Get Events
+              </button>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col">
+              <select class="form-select" id="editTabEventSelector"></select>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col">
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_title_checkbox"></div>
+                <div class="input-group-text edit-field-label">Title</div>
+                <input type="text" class="form-control" id="edit_title_input">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_starttime_checkbox"></div>
+                <div class="input-group-text edit-field-label">Start Time</div>
+                <input type="time" class="form-control" id="edit_starttime_input">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_endtime_checkbox"></div>
+                <div class="input-group-text edit-field-label">End Time</div>
+                <input type="time" class="form-control" id="edit_endtime_input">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_description_checkbox"></div>
+                <div class="input-group-text edit-field-label">Description</div>
+                <textarea type="text" class="form-control" id="edit_description_input" style="height: 100px"></textarea>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_location_checkbox"></div>
+                <div class="input-group-text edit-field-label">Location</div>
+                <input type="text" class="form-control" id="edit_location_input">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_guests_checkbox"></div>
+                <div class="input-group-text edit-field-label">Guests</div>
+                <input type="text" class="form-control" id="edit_guests_input">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_color_checkbox"></div>
+                <div class="input-group-text edit-field-label">Color</div>
+                <select class="form-select"  id="edit_color_select">
+                  <option value="1" data="#7986CB">Lavender</option>
+                  <option value="2" data="#33B679">Sage</option>
+                  <option value="3" data="#8E24AA">Grape</option>
+                  <option value="4" data="#E67C73">Flamingo</option>
+                  <option value="5" data="#F6BF26">Banana</option>
+                  <option value="6" data="#F4511E">Tangerine</option>
+                  <option value="7" data="#039BE5">Peacock</option>
+                  <option value="8" data="#616161">Graphite</option>
+                  <option value="9" data="#3F51B5">Blueberry</option>
+                  <option value="10" data="#0B8043">Basil</option>
+                  <option value="11" data="#D50000">Tomato</option>
+                </select>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_transparency_checkbox"></div>
+                <div class="input-group-text edit-field-label">Transparency</div>
+                <select class="form-select"  id="edit_transparency_select">
+                  <option value="opaque">Opaque (Blocks times on calendar)</option>
+                  <option value="transparent">Transparent (Does not block times on calendar)</option>
+                </select>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-text"><input class="form-check-input mr-5" type="checkbox" value="" id="edit_visibility_checkbox"></div>
+                <div class="input-group-text edit-field-label">Visibility</div>
+                <select class="form-select"  id="edit_visibility_select">
+                  <option value="default">Default (Follows the behavior of your calendar)</option>
+                  <option value="public">Public (Event details are visible to anyone who can see your calendar)</option>
+                  <option value="private">Private (Only attendees can see event details)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3" id="editEventsButtonRow">
+            <div class="col">
+              <button class="btn btn-primary" type="button" disabled="disabled" id="editEventsButton" onclick="batchEventEdits()">
+                Edit Events...
+              </button>
+            </div>
+          </div>
+        </div>
+   
+    
+    
+      <!--    **************************     
+
+                      Delete Tab 
+
+              **************************  -->  
+        
+        <div class="tab-pane fade container" id="deleteTab" role="tabpanel" aria-labelledby="deleteTab" >
+          
+          <div class="row mt-3">
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">Start Date</span>
+                <input type="date" class="form-control" id="startDateDelete">
+              </div>
+            </div>
+            <div class="col">
+              <div class="input-group">
+                <span class="input-group-text domainLabel">End Date</span>
+                <input type="date" class="form-control" id="endDateDelete">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col">
+              <select class="form-select calendarSelector" id="deleteTabCalendarSelector"></select>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" type="button" id="deleteTabGetEventsButton" onclick="getEventsToDelete()">
+                Get Events
+              </button>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col">
+              <select class="form-select" id="deleteTabDaySelector"></select>
+            </div>
+            <div class="col">
+              <select class="form-select" id="deleteTabEventSelector" disabled>
+                <option data='all'>All Events</option>
+              </select>
+            </div>
+            <div class="col">
+              <button class="btn btn-danger" type="button" id="deleteTabDeleteButton" onclick="deleteEventsModal()">
+                Delete Events...
+              </button>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    
+        <!--    **************************     
+
+            Services Not Loaded Module
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="servicesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="false" data-bs-backdrop='static'>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Services Not Loaded</h5>
+          </div>
+          <div class="modal-body">
+            <p>This site uses multiple services that must be loaded before it will work. It appears one or more of those services has not loaded. Please refresh the page to try again.</p>
+            <p>
+              <ul>
+                <li id="gisStatus"></li>
+                <li id="gapiStatus"></li>
+                <li id="fbStatus"></li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+      <!--    **************************     
+
+                    Populate Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="populateModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Populate Calendar</h5>
+          </div>
+          <div class="modal-body">
+            <p id="totalEvents"></p>
+            <p id="eligibleEvents"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#populateModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-primary" id="populateButton" disabled="disabled" onclick="populateCalendar()">Populate</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+      <!--    **************************     
+
+                    Edit Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Events</h5>
+          </div>
+          <div class="modal-body">
+            <p id="editedEventsCount"></p>
+            <p id="editedEventsUpdates"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#editModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmEditButton" disabled="disabled" onclick="runBatchedEdits()">Confirm Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+      <!--    **************************     
+
+                Delete Events Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="deleteEventModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Delete Events</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#deleteEventModal').modal('hide')})()">
+              <span>&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p id="deleteQueryData"></p>
+            <p id="deleteCountData"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#deleteEventModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-danger" id="deleteEventsButton" disabled="disabled" onclick="deleteEvents()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+     <!--    **************************     
+
+                    Delete Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Delete</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#deleteModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>Do you want to delete <strong id="deleteModalName"></strong>? There is no way to recover it.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#deleteModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-danger" id="deleteScheduleButton" onclick="deleteSchedule()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+  
+  
+    <!--    **************************     
+
+                    Update Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Update</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#updateModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>Do you want to update <strong id="updateModalName"></strong>? That will overwrite the previous schedule.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#updateModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-success" id="updateScheduleButton" onclick="updateSchedule()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+  
+    <!--    **************************     
+
+                    Save As Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="saveAsModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Save As...</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#saveAsModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>This does not upload your schedule to your calendar. It simply saves on this site so that you can more easily access it later if you need to make chages. To populate your calendar click the Populate button below the table.</p>
+            <p>What would you like to save this schedule as?</p>
+            <p>
+              <input type="text" class="form-control" id="scheduleNameInput" placeholder="Schedule Name">
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#saveAsModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-success" id="saveAsScheduleButton" onclick="saveScheduleAs()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+  
+  </body>
+</html>

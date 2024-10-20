@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SchoolCycle - Manage</title>
+
+    <base target="_top" />
+    <link rel="icon" href="https://cdn.glitch.global/f42708b9-0c54-47f0-8465-2d592170f73f/SchoolCycleLogo.svg?v=1702831555917">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <link rel="stylesheet" href="style.css" />
+    <link href="libraries/bootstrap.min.css" rel="stylesheet" />
+    <script src="libraries/bootstrap.bundle.min.js"></script>
+    <script src="libraries/jquery-3.7.1.min.js"></script>
+    <script src="libraries/popper.min.js"></script>
+    <script src="libraries/firebase-app.js"></script>
+    <script src="libraries/firebase-auth.js"></script>
+    <script src="libraries/firebase-database.js"></script>
+    <script defer src="libraries/gapi.js"></script>
+    <script defer src="libraries/gsi.js"></script>
+    <script defer src="schoolCycle.js"></script>
+    <script defer src="manage/manage.js"></script>
+  </head>
+  
+  <body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-dark bg-dark">
+      <span class="navbar-brand mb-0 h1">SchoolCycle - <i id="pageTitle">Manage</i></span>
+
+      <!-- Logged in -->
+      <span class="navbar-text" id="logoutModule">
+        <img id="loggedInAsImage" />
+        <span id="loggedInAs"></span>
+        <button class="btn btn-danger" id="logout">Logout</button>
+      </span>
+
+      <!-- Not Logged In -->
+      <span class="navbar-text" id="loginModule">
+        <button class="btn btn-primary" id="signin">Sign in with Google</button>
+      </span>
+    </nav>
+    
+    
+    
+    <!-- Alert Container -->
+    <div class="alert-container">
+      <div class="container">
+          <div class="col" id="manage-alert-container"></div>
+      </div>
+    </div>
+    
+    
+    <!-- Body -->
+    <div class="container" id="main">
+      
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="basics-tab" data-bs-toggle="tab" data-bs-target="#basics" type="button" role="tab" aria-controls="basics" aria-selected="true" >
+            SchoolCycle Account Settings
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="days-tab" data-bs-toggle="tab" data-bs-target="#days" type="button" role="tab" aria-controls="days" aria-selected="false" >
+            Cycle Day Calendar
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#schedules" type="button" role="tab" aria-controls="schedules" aria-selected="false" >
+            Schedule Tool Settings
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content" id="myTabContent">
+        
+          <!--    **************************     
+
+                  SchoolCycle Settings Tab 
+
+                  **************************  -->  
+        
+        <div class="tab-pane fade container show active" id="basics" role="tabpanel" aria-labelledby="basics-tab" >
+          <div class="row mt-3">
+            <div class="input-group mb-3">
+              <span class="input-group-text domainLabel" id="domain-administrators-label">Domain Admin</span>
+              <input type="text" disabled="true" class="form-control" id="domain-administrators" placeholder="" aria-label="domain-adminstrators" aria-describedby="domain-administrators-label">
+            </div>
+          </div>   
+          <div class="row">
+            <div class="input-group mb-3">
+              <span class="input-group-text domainLabel" id="domain-expiration-label">Expiration</span>
+              <input type="date" disabled="true" class="form-control" id="domain-expiration" placeholder="" aria-label="domain-expiration" aria-describedby="domain-expiration-label">
+            </div>
+          </div>   
+          <div class="row">
+            <p>
+              To modify administrators or extend your subscription length, please email <a href="mailto:support@schoolcycle.app">support@schoolcycle.app</a>.
+            </p>
+          </div>
+        </div>
+        
+          <!--    **************************     
+
+                   Cycle Days Calendar Tab 
+
+                  **************************  -->  
+        
+        <div class="tab-pane fade container" id="days" role="tabpanel" aria-labelledby="days-tab" >
+          <div class="row mt-3 mb-3">
+            <div class="input-group">
+              <span class="input-group-text domainLabel" id="domain-calendar-id-label">Calendar ID</span>
+                <select class="custom-select" id="domain-calendar-id" style="width:70%" disabled onchange="enableSaveButton()"></select>
+              <div class="input-group-append">
+                <button class="btn btn-primary" disabled type="button" id="domain-calendar-save-button" onclick="saveCalID()">Save</button>
+              </div>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row mb-3">
+            <label for="daysCSV" class="form-label">Upload a csv detailing every day of the cycle. There is a template available <a href="Rotation-Days.csv" download>here</a></b></label>
+            <div class="input-group">
+              <input class="form-control" type="file" id="daysCSV">
+            </div>
+          </div>
+        
+          <div class="row mb-3">
+            
+          </div>
+        </div>
+      
+      
+        
+        <!--    **************************     
+  
+                      Schedule Tab 
+
+                **************************  -->  
+        
+        <div class="tab-pane fade container" id="schedules" role="tabpanel" aria-labelledby="schedules-tab" >
+          <div class="row mb-3 mt-3">
+            <p>
+              Unselect any days from your cycle days calendar that you don't want as part of the schedule tool.
+            </p>
+            
+            <div class="col">
+              <div class="input-group" id="domain-cycle-days">
+                <div class="btn-group" role="group" id="daySelectButtons">
+                </div>
+              </div>
+            </div>
+            
+            <div class="col">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-success" id="manage-save-button" onclick="saveSelectedDays()" disabled>Save</button>
+                <button type="button" class="btn btn-primary" onclick="getEligibleDays()">Refresh</button>
+              </div>
+            </div>
+          </div>
+          
+          <hr>
+          
+          
+          <div class="row" id="manage-schedule-row" style="text-align:center;display:none;">
+            <div class="row mb-3">
+              <div class="col">
+                <select class="form-select" id="schedulesDropDown" onchange="schedulesDropDownChanged()"></select>
+              </div>
+              <div class="col">
+                <div class="btn-group" role="group" aria-label="Schedule Buttons">
+                  <button type="button" class="btn btn-primary" id="loadSchedule" onclick="loadSchedule()">Load</button>
+                  <button type="button" class="btn btn-success" id="saveScheduleAs" onclick="(()=>{$('#saveAsModal').modal('show')})()">Save As...</button>
+                  <button type="button" class="btn btn-success" id="saveSchedule" onclick="(()=>{$('#updateModalName').text($('#schedulesDropDown').find(':selected').val());$('#updateModal').modal('show')})()">Update...</button>
+                  <button type="button" class="btn btn-danger" id="deleteSchedule" onclick="(()=>{$('#deleteModalName').text($('#schedulesDropDown').find(':selected').val());$('#deleteModal').modal('show')})()">Delete...</button>
+                </div>
+              </div>
+              <div class="col">
+                <div class="btn-group" role="group" aria-label="Schedule Buttons">
+                  <button type="button" class="btn btn-warning" id="removeRow" onclick="changeRowCount(this)">- Row</button>
+                  <button type="button" class="btn btn-info" id="addRow" onclick="changeRowCount(this)">+ Row</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-4" style="text-align:left">
+                <div class="btn-group" role="group">  
+<!--                   <input class="form-check-input" type="checkbox" id="sameTimeCheckbox" style="margin-right: 5px" onchange="generateScheduler()"> -->
+                  <input class="form-check-input" type="checkbox" checked id="sameTimeCheckbox" style="margin-right: 5px" onchange="generateScheduler()">
+                  <label class="form-check-label" for="sameTimeCheckbox">
+                    Same times every day.
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-8" id="differentTimesDayRadio" style="display:none;">
+<!--                 <div class="btn-group" role="group">
+                  <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                  <label class="btn btn-outline-primary" for="btnradio1">Radio 1</label>
+
+                  <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio2">Radio 2</label>
+
+                  <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio3">Radio 3</label>
+                </div> -->
+              </div>
+            </div>
+            
+            <div class="row" style="overflow:auto;" id="defaultScheduleDiv">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  
+  
+    <!--    **************************     
+
+                    Delete Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Delete</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#deleteModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>Do you want to delete <strong id="deleteModalName"></strong>? That will remove it from everyone on your domain.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#deleteModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-warning" id="deleteScheduleButton" onclick="deleteSchedule()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+  
+  
+    <!--    **************************     
+
+                    Update Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Update</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#updateModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>Do you want to update <strong id="updateModalName"></strong>? That will overwrite the previous schedule.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#updateModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-success" id="updateScheduleButton" onclick="updateSchedule()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+  
+    <!--    **************************     
+
+                    Save As Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="saveAsModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Save As...</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#saveAsModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p>What would you like to save this schedule as? The name you select will be visible to everyone on your domain.</p>
+            <p>
+              <input type="text" class="form-control" id="scheduleNameInput" placeholder="Schedule Name">
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#saveAsModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-success" id="saveAsScheduleButton" onclick="saveScheduleAs()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+    <!--    **************************     
+
+                    CSV Modal 
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="csvModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Populate Day Cycle Calendar</h5>
+<!--             <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="(()=>{$('#csvModal').modal('hide')})()">
+              <span aria-hidden="true">&times;</span>
+            </button> -->
+          </div>
+          <div class="modal-body">
+            <p id="dayCount"></p>
+            <p id="dayList"></p>
+            <p id="addCount"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="(()=>{$('#csvModal').modal('hide')})()">Cancel</button>
+            <button type="button" class="btn btn-primary" id="populateButton" onclick="populateCycleCalendar()">Populate</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+  
+  
+    <!--    **************************     
+
+            Services Not Loaded Module
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="servicesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="false" data-bs-backdrop='static'>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Services Not Loaded</h5>
+          </div>
+          <div class="modal-body">
+            <p>This site uses multiple services that must be loaded before it will work. It appears one or more of those services has not loaded. Please refresh the page to try again.</p>
+            <p>
+              <ul>
+                <li id="gisStatus"></li>
+                <li id="gapiStatus"></li>
+                <li id="fbStatus"></li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
