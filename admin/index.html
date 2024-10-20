@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SchoolCycle - Admin</title>
+
+    <base target="_top" />
+    <link rel="icon" href="https://cdn.glitch.global/f42708b9-0c54-47f0-8465-2d592170f73f/SchoolCycleLogo.svg?v=1702831555917">
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <link rel="stylesheet" href="style.css" />
+    <link href="libraries/bootstrap.min.css" rel="stylesheet" />
+    <script src="libraries/bootstrap.bundle.min.js"></script>
+    <script src="libraries/jquery-3.7.1.min.js"></script>
+    <script src="libraries/popper.min.js"></script>
+    <script src="libraries/firebase-app.js"></script>
+    <script src="libraries/firebase-auth.js"></script>
+    <script src="libraries/firebase-database.js"></script>
+    <script defer src="libraries/gapi.js"></script>
+    <script defer src="libraries/gsi.js"></script>
+    <script defer src="schoolCycle.js"></script>
+    <script defer src="admin/admin.js"></script>
+  </head>
+  <body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-dark bg-dark">
+      <span class="navbar-brand mb-0 h1">SchoolCycle - <i>Admin</i></span>
+
+      <!-- Logged in -->
+      <span class="navbar-text" id="logoutModule">
+        <img id="loggedInAsImage" />
+        <span id="loggedInAs"></span>
+        <button class="btn btn-danger" id="logout">Logout</button>
+      </span>
+
+      <!-- Not Logged In -->
+      <span class="navbar-text" id="loginModule">
+        <button class="btn btn-primary" id="signin">Sign in with Google</button>
+      </span>
+    </nav>
+
+    <div class="container" id="main">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="domains-tab" data-bs-toggle="tab" data-bs-target="#domains" type="button" role="tab" aria-controls="domains" aria-selected="true" >
+            Domains
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false" >
+            Users
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab" aria-controls="logs" aria-selected="false" >
+            Logs
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="domains" role="tabpanel" aria-labelledby="domains-tab" ></div>
+        <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab" ></div>
+        <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab" ></div>
+      </div>
+    </div>
+    
+    <!-- Domain Modal -->
+    <div class="modal fade" id="domainModal" tabindex="-1" aria-labelledby="domainModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="domainModalLabel"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="domainModalBody">
+            <div class="input-group mb-3">
+              <span class="input-group-text domainLabel" id="domain-administrators-label">Administrators</span>
+              <input type="text" class="form-control" id="domain-administrators" placeholder="Comma separated emails" aria-label="domain-adminstrators" aria-describedby="domain-administrators-label">
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text domainLabel" id="domain-calendar-id-label">Calendar ID</span>
+              <input type="text" class="form-control" id="domain-calendar-id" placeholder="Calendar ID" aria-label="domain-calendar-id" aria-describedby="domain-calendar-id-label">
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text domainLabel" id="domain-expiration-label">Expiration</span>
+              <input type="date" class="form-control" id="domain-expiration" placeholder="" aria-label="domain-expiration" aria-describedby="domain-expiration-label">
+            </div>
+            <div class="input-group">
+              <span class="input-group-text domainLabel">Cycle Days</span>
+              <textarea class="form-control" aria-label="Cycle Days" id="domain-cycle-days"></textarea>
+            </div>
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="updateDomain()">Save changes</button>
+          </div>
+          <div id="domainModalAlert" style="width:95%; margin-left:auto; margin-right:auto;"></div>
+        </div>
+      </div>
+    </div>
+    
+        <!--    **************************     
+
+            Services Not Loaded Module
+
+            **************************  -->  
+  
+
+    <div class="modal fade" id="servicesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="false" data-bs-backdrop='static'>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Services Not Loaded</h5>
+          </div>
+          <div class="modal-body">
+            <p>This site uses multiple services that must be loaded before it will work. It appears one or more of those services has not loaded. Please refresh the page to try again.</p>
+            <p>
+              <ul>
+                <li id="gisStatus"></li>
+                <li id="gapiStatus"></li>
+                <li id="fbStatus"></li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

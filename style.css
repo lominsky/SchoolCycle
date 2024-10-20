@@ -1,0 +1,57 @@
+#loggedInAsImage {
+  height: 30px;
+  border-radius: 100px;
+  margin-right: 5px;
+}
+
+#loggedInAs {
+  padding-right: 20px;
+}
+
+#loginModule {
+  display: none;
+}
+
+#logoutModule {
+  display: none;
+}
+
+.grey {
+  background-color: #E9E9E9;
+  color: #000000;
+}
+
+#main {
+  padding-top: 50px;
+}
+
+.navbar {
+  padding: 8px;
+}
+
+.domainLabel {
+  width: 130px;
+}
+
+#logSelect {
+  margin-top: 20px;
+}
+
+.alert-container {
+/*   background-color: #c0c0c0; */
+/*   display: flex; */
+  justify-content: center;
+  align-items: center;
+  margin-top:20px;
+  position:fixed;
+  top:0;
+  width:100%;
+  margin-left: auto;
+  margin-right: auto;
+  z-index:99999;
+  text-align:center;
+}
+
+.edit-field-label {
+  min-width: 150px;
+}
