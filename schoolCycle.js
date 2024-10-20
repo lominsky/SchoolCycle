@@ -135,6 +135,8 @@ $(() => {
     $('#servicesModal').modal('show');
     console.error("gisLoaded() errored.", error);
   }
+  
+  $('#copyright-year').text((new Date()).getFullYear());
 
   //Handle changes in login status
   firebase.auth().onAuthStateChanged((u) => {

@@ -72,15 +72,15 @@
         </div>
       </div>
       
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
+      <div class="row mt-5">
+        <div class="col" style="text-align:center;">
+          <a href="user" class="btn btn-primary" role="button">Get Started</a>
+        </div>
+      </div>
       
-      <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-        <p class="col-md-4 mb-0 text-body-secondary">© 2024 Louis Minsky</p>
+      
+      <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 mt-5 border-top">
+        <p class="col-md-4 mb-0 text-body-secondary">© <span id="copyright-year"></span> Louis Minsky</p>
 
         <a href="/" class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
           <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
@@ -97,4 +97,8 @@
     </div>
         
   </body>
+  
+    <script>
+    $('#copyright-year').text((new Date()).getFullYear());
+  </script>
 </html>
