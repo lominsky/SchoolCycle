@@ -25,6 +25,19 @@ function displayLogin() {
 
 //Put the values from the db into the fields
 function processDomainData() {
+    let expiration = new Date(domain.expiration);
+    if(expiration < (new Date())) {
+    console.log("EXPIRED!");
+    // $("#authorizeModal").modal('hide');
+    $("#expiredModal").modal("show");
+    const token = gapi.client.getToken();
+    if (token !== null) {
+      google.accounts.oauth2.revoke(token.access_token);
+      gapi.client.setToken('');
+    }
+    return false;
+  }
+  
   $("#domain-expiration").val(timestampToInputDateString(domain.expiration))
   $("#domain-administrators").val(Object.values(domain.administrators).toString())
   $("#domain-calendar-id").append($("<option selected id='starter-cal-id-option'>").text(domain.cycle_calendar_id))

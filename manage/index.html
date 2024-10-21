@@ -232,7 +232,53 @@
         </ul>
       </footer>
     </div>
+   
     
+
+    <!--    **************************     
+
+        Authorize Google Calendar API Modal
+
+        **************************  -->  
+  
+
+    <div class="modal fade" id="authorizeModal" tabindex="-1" role="dialog" aria-hidden="false" data-bs-backdrop='static' data-keyboard="false">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Authorize Calendar Access</h5>
+          </div>
+          <div class="modal-body">
+            <p>In order for this site you work you must authorize access to your Google Calendar. It will read your list of calendars and, when requested, will read events from and write events to specific calendars.</p>
+          </div>         
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" onclick="full_logout()">Log Out</button>
+            <button type="button" class="btn btn-primary" onclick="handleAuth()">Authorize</button>
+          </div>
+        </div>
+      </div>
+    </div>  
+    
+  
+      <!--    **************************     
+
+      Expired Account Modal
+
+      **************************  -->  
+  
+
+    <div class="modal fade" id="expiredModal" tabindex="-1" role="dialog" aria-hidden="false" data-bs-backdrop='static' data-keyboard="false">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Subscription Expired</h5>
+          </div>
+          <div class="modal-body" style="height:400px">
+            <p>Your subscription to SchoolCycle has expired. To renew, please email contact@schoolcycle.app</p>
+          </div>         
+        </div>
+      </div>
+    </div> 
   
   
     <!--    **************************     
