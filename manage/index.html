@@ -106,6 +106,10 @@
                   **************************  -->  
         
         <div class="tab-pane fade container" id="days" role="tabpanel" aria-labelledby="days-tab" >
+          
+          <div class="row mt-3">
+            <p class="text-justify">This whole tool works by looking at a single calendar that tracks what day of the cycle it is and adding the appropriate events to that day. You must select a calendar that you have write access to and everyone on your domain has read access to.</p>
+          </div>
           <div class="row mt-3 mb-3">
             <div class="input-group">
               <span class="input-group-text domainLabel" id="domain-calendar-id-label">Calendar ID</span>
@@ -118,8 +122,12 @@
           
           <hr>
           
+          <div class="row mt-3">
+            <p class="text-justify">You must add one event per day to your selected Cycle Day Calendar. The title of the event will be considered the day name and can be anything you choose (e.g. Day 1, Day 2, Day 3). The description of the event must be the word "Cycle" followed by a number (e.g. Cycle 1, Cycle 2, Cycle 3) so that the multi-cycle tool works. You can create events manually, but in order to make it easier you can upload a CSV with the appropriate data using the template linked below. Please note that the value for the Cycle # column should be only an integer (e.g. 1, 2, 3)</p>
+          </div>
+          
           <div class="row mb-3">
-            <label for="daysCSV" class="form-label">Upload a csv detailing every day of the cycle. There is a template available <a href="Rotation-Days.csv" download>here</a></b></label>
+            <label for="daysCSV" class="form-label">Upload a csv detailing every day of the cycle. There is a template available <a href="/Rotation-Days.csv" download>here</a></b></label>
             <div class="input-group">
               <input class="form-control" type="file" id="daysCSV">
             </div>
