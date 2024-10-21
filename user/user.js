@@ -78,6 +78,19 @@ function processUser(USER) {
 
 function processDomainData() {
   console.log("processDomainData()");
+  let expiration = new Date(domain.expiration);
+  console.log(expiration)
+  if(expiration < (new Date())) {
+    console.log("EXPIRED!");
+    // $("#authorizeModal").modal('hide');
+    $("#expiredModal").modal("show");
+    const token = gapi.client.getToken();
+    if (token !== null) {
+      google.accounts.oauth2.revoke(token.access_token);
+      gapi.client.setToken('');
+    }
+    return false;
+  }
   let scheds = Object.keys(domain.default_schedules);
   scheds = scheds.sort();
   $("#defaultSelector").empty()

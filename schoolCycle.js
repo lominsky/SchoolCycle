@@ -44,6 +44,10 @@ function gapiLoaded() {
 
 async function initializeGapiClient() {
   console.log("initializeGapiClient()");
+  console.log(API_KEY);
+  // if(!API_KEY) {
+  //   return false;
+  // }
   await gapi.client.init({
     apiKey: API_KEY,
     discoveryDocs: [DISCOVERY_DOC],
@@ -81,12 +85,13 @@ function gisLoaded() {
 //If any of the external services don't load properly, display 
 function googleServicesAreLoaded() {
   console.log("googleServicesAreLoaded()");
+  console.log(gisInited, gapiInited, fbInited);
   if(!gisInited) $("#gisStatus").text("Google Identity Service is not loaded.");
   if(!gapiInited) $("#gapiStatus").text("Google API is not loaded.");
   if(!fbInited) $("#fbStatus").text("Firebase is not loaded.");
   
   if(gisInited && gapiInited && fbInited) {
-    handleAuth();
+    // handleAuth();
     serviceModalInterval = setInterval(() => {
       serviceModalIntervalCount++;
       $('#servicesModal').modal('hide')
@@ -101,10 +106,14 @@ function googleServicesAreLoaded() {
 //Unless you pass it an explicit callback function, it will call authCallback()
 function handleAuth(callback) {
   console.log("handleAuth()");
+  if(!tokenClient) {
+    gisLoaded();
+  }
   tokenClient.callback = async (resp) => {
     if (resp.error !== undefined) {
       throw (resp);
     } else {
+      $("#authorizeModal").modal('hide')
       if(callback != null) {
         callback();
       } else if(authCallback != null) {
@@ -145,6 +154,10 @@ $(() => {
     if (u) {
       user = u;
       user.domain = safeDomain(u.email)
+      $("#authorizeModal").modal('show')
+      if(!tokenClient) {
+        gisLoaded();
+      }
       displayMain(u);
     } else {
       displayLogin();
@@ -163,8 +176,11 @@ $(() => {
   });
 
   //Handle clicking on the sign out / signout / log out button
-  $("#logout").on('click', () => {
-    displayLogin();
+  $("#logout").on('click', full_logout);
+});
+
+function full_logout() {
+  displayLogin();
     firebase.auth().signOut();
     const token = gapi.client.getToken();
     if (token !== null) {
@@ -172,8 +188,8 @@ $(() => {
       gapi.client.setToken('');
     }
     user = null;
-  });
-});
+    location.reload()
+}
 
 //Get the values from the various schedule tables in the nice JSON format
 function getTableValues() {
