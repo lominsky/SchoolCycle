@@ -1251,6 +1251,7 @@ function batchEventEdits() {
 }
 
 function runBatchedEdits() {
+    $("#confirmEditButton").attr("disabled", "disabled");
     user.batch_edit.execute((es) => {
     let errorCount = 0;
     for(let i in es) {
@@ -1269,9 +1270,8 @@ function runBatchedEdits() {
       alert($("#manage-alert-container"), "Updated " + (user.to_edit.length-errorCount) + " out of " + user.to_edit.length + " events. Please try again shortly.", "danger", 5000);
     } 
     
-    $('#editModal').modal('hide')
-    getEventsToEdit()
-    $("#confirmEditButton").attr("disabled", "disabled")
+    $('#editModal').modal('hide');
+    getEventsToEdit();
   });
 }
 
