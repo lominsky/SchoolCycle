@@ -263,7 +263,7 @@ function timestampToInputDateString(ts) {
 //Log a message to the db log file. Can take a text message and an extra (object?)
 function log(message, extra) {
   // console.log("log()");
-  // console.log(message, extra)
+  console.log(message, extra)
   if(extra == null) {
     
   } else if(typeof extra == "object") {

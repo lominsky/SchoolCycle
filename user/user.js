@@ -97,9 +97,15 @@ function processDomainData() {
   if(scheds.length == 0) {
     // console.log("NO SCHEDULES!");
   } else if (scheds.length == 1) {
+    // console.log("generating domain schedules")
+    for(let sched of scheds) {
+      let opt = $("<option>").text(fbUnsafe(sched))
+      $("#defaultSelector").append(opt)
+    }
     domain.selectedDefault = domain.default_schedules[scheds[0]];
   } else {
     // console.log("generating domain schedules")
+    $("#multipleDefaultSchedules").text("Your school has multiple possible schedules. Select the one that applies to you.");
     for(let sched of scheds) {
       let opt = $("<option>").text(fbUnsafe(sched))
       $("#defaultSelector").append(opt)
