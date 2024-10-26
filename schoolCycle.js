@@ -38,13 +38,13 @@ let domain = null;
 
 //Load and Initialize GAPI
 function gapiLoaded() {
-  console.log("gapiLoaded()");
+  // console.log("gapiLoaded()");
   gapi.load('client', initializeGapiClient);
 }
 
 async function initializeGapiClient() {
-  console.log("initializeGapiClient()");
-  console.log(API_KEY);
+  // console.log("initializeGapiClient()");
+  // console.log(API_KEY);
   // if(!API_KEY) {
   //   return false;
   // }
@@ -59,9 +59,9 @@ async function initializeGapiClient() {
 //Load Google Identity Service
 function gisLoaded() {
   database.ref("/admin/").once("value", (snapshot) => {
-    console.log("read the admin information")
+    // console.log("read the admin information")
     let val = snapshot.val();
-    console.log(val)
+    // console.log(val)
     CLIENT_ID = val.client_id;
     API_KEY = val.api_key;
     
@@ -70,7 +70,7 @@ function gisLoaded() {
       return false
     }
     
-    console.log("gisLoaded()");
+    // console.log("gisLoaded()");
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
@@ -84,8 +84,8 @@ function gisLoaded() {
 
 //If any of the external services don't load properly, display 
 function googleServicesAreLoaded() {
-  console.log("googleServicesAreLoaded()");
-  console.log(gisInited, gapiInited, fbInited);
+  // console.log("googleServicesAreLoaded()");
+  // console.log(gisInited, gapiInited, fbInited);
   if(!gisInited) $("#gisStatus").text("Google Identity Service is not loaded.");
   if(!gapiInited) $("#gapiStatus").text("Google API is not loaded.");
   if(!fbInited) $("#fbStatus").text("Firebase is not loaded.");
@@ -105,7 +105,7 @@ function googleServicesAreLoaded() {
 //Loads the authoriation popup for GAPI
 //Unless you pass it an explicit callback function, it will call authCallback()
 function handleAuth(callback) {
-  console.log("handleAuth()");
+  // console.log("handleAuth()");
   if(!tokenClient) {
     gisLoaded();
   }
@@ -131,7 +131,7 @@ function handleAuth(callback) {
 
 //Runs when the page is loaded. Handles login and adding event listeners to buttons
 $(() => {
-  console.log("PAGE LOADED");
+  // console.log("PAGE LOADED");
   try {
     gapiLoaded();
   } catch (error) {
@@ -170,7 +170,7 @@ $(() => {
     let provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider).then((result) => {
     }).catch((error) => {
-      console.log("Sign In Error.", error);
+      // console.log("Sign In Error.", error);
       displayLogin();
     });
   });
@@ -193,17 +193,17 @@ function full_logout() {
 
 //Get the values from the various schedule tables in the nice JSON format
 function getTableValues() {
-  console.log("getTableValue()");
+  // console.log("getTableValue()");
   let values = [];
   
   let sameTime = true;
-  console.log($("#sameTimeCheckbox"));
+  // console.log($("#sameTimeCheckbox"));
   if($("#sameTimeCheckbox")[0] != null) {
     sameTime = $("#sameTimeCheckbox").is(":checked")
   } else {
     sameTime = domain.selectedDefault.sameTimes;
   }
-  console.log(sameTime);
+  // console.log(sameTime);
   
   if(sameTime) {
     let headers = []
@@ -219,7 +219,7 @@ function getTableValues() {
       }
     })
   } else {
-    console.log("different times");
+    // console.log("different times");
     $(".individualScheduleTable").each((i,t) => {
       let tableData = [];
       $(t).children().each((y,e) => {
@@ -237,7 +237,7 @@ function getTableValues() {
     });
   }
   
-  console.log(values);
+  // console.log(values);
   
   // Check that start is before end
   for(let i = 1; i < values.length; i++) {
@@ -254,7 +254,7 @@ function getTableValues() {
 
 //Converts from a ms timestamp into a nicely formatted date string
 function timestampToInputDateString(ts) {
-  console.log("timestampToInputDateStrings()");
+  // console.log("timestampToInputDateStrings()");
   if(ts == "") return "";
   let d = new Date(parseInt(ts));
   return d.toISOString().substring(0,10)
@@ -263,7 +263,7 @@ function timestampToInputDateString(ts) {
 //Log a message to the db log file. Can take a text message and an extra (object?)
 function log(message, extra) {
   // console.log("log()");
-  console.log(message, extra)
+  // console.log(message, extra)
   if(extra == null) {
     
   } else if(typeof extra == "object") {

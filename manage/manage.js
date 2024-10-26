@@ -27,7 +27,7 @@ function displayLogin() {
 function processDomainData() {
     let expiration = new Date(domain.expiration);
     if(expiration < (new Date())) {
-    console.log("EXPIRED!");
+    // console.log("EXPIRED!");
     // $("#authorizeModal").modal('hide');
     $("#expiredModal").modal("show");
     const token = gapi.client.getToken();
@@ -375,6 +375,10 @@ function getEligibleDays() {
   $("#daySelectButtons").empty();
 
   getCurrentCycleDays().then((response) => {
+    if(!response) {
+      log("getCurrentCycleDays() -> getEligibleDays() error");
+      return false;
+    }
     let days = response.result.items;
     
     if(days.length == 0) {
