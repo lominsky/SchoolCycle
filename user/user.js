@@ -989,7 +989,12 @@ function addMultiEventsButton() {
   for(let e of domain.cycle_day_events) {
     let d = new Date(e.start.date);
     d = new Date(d.getTime() + d.getTimezoneOffset() * 1000 * 60)
+    console.log(e);
     let day = e.summary;
+    if(!e.description) continue;
+    if(e.description.length < 7) continue;
+    if(e.description.substring(0, 6) != "Cycle ") continue;
+    if(e.description.substring(6) == NaN) continue;
     let cycle = parseInt(e.description.substring(6))
     if(d >= start && d <= end) {
       date_range.push({
