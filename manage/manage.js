@@ -606,11 +606,17 @@ function schedulesDropDownChanged() {
 
 // Handle the load schedule button that fills the input table using saved values
 function loadSchedule() {
+  // console.log("loadSchedule");
   let name = fbSafe($('#schedulesDropDown').find(':selected').val());
   let schedule = domain.default_schedules[name];
   $("#sameTimeCheckbox").prop("checked", schedule.sameTimes);
+  // console.log($("#sameTimeCheckbox").prop("checked"));
   schedule = JSON.parse(schedule.entries);
-  rowCount = schedule.length-2;
+  // console.log(schedule);
+  // console.log(schedule.length);
+  $("#sameTimeCheckbox").prop("checked") ? rowCount = schedule.length-2 : rowCount = schedule[0].length-2
+  
+  // rowCount = schedule.length;
   generateScheduler();
   fillScheduleInputs(schedule);
 }
@@ -660,7 +666,7 @@ function fillScheduleInputs(schedule) {
 function saveScheduleAs() {
   $('#saveAsModal').modal('hide')
   let values = getTableValues();
-  
+  // console.log("saveScheduleAs");
   let name = fbSafe($("#scheduleNameInput").val());
   $("#scheduleNameInput").val("")
   if(name.length > 100) name = name.substring(0, 100);
