@@ -57,7 +57,7 @@ function processUser(USER) {
       });
     } else {
       user.schedules = data.schedules;
-      database.ref('users/' + u.domain + '/' + u.uid + '/last_login').set(now.getTime());
+      database.ref('users/' + u.domain + '/' + u.uid + '/last_login').set(firebase.database.ServerValue.TIMESTAMP);
       // updateScheduleDropDown()
     }
   });
