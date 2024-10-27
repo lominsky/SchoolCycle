@@ -60,6 +60,11 @@ function processAdminData() {
       let body = $("<tbody>");
       table.append(body);
       $("#users").append(table);
+      
+      //I want this to sort users by domain and then name, but no luck so far.
+      users.sort((a, b) => {
+        return b.domain - a.domain || a.name - b.name;
+      })
       for (let user of users) {
         let row = $("<tr>");
         for (let p of userProps) {

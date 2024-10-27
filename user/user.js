@@ -213,6 +213,7 @@ function getCalendars() {
 function updateCalendarSelectors(calendars, selected) {
   // console.log("updateCalendarSelectors()")
   calendars = calendars.sort((a,b) => { return a.summary - b.summary })
+  console.log(calendars);
   for(let cal of calendars) {
     let opt = $("<option>")
     opt.text(cal.summary)
@@ -504,7 +505,8 @@ function generateScheduler() {
   
   if(domain.selectedDefault == null) return false;
   
-  const rows = JSON.parse(domain.selectedDefault.entries).length - 1
+  const rows = domain.selectedDefault.sameTimes ? JSON.parse(domain.selectedDefault.entries).length - 1 : JSON.parse(domain.selectedDefault.entries)[0].length - 1;
+  // if(!domain.selectedDefault.sameTimes) rows = JSON.parse(domain.selectedDefault.entries)[0].length - 1
   const columns = cycleDays.length + 2;
   // $("#sameTimeCheckbox").prop("checked", selectedDefault.sameTimes);
   
@@ -861,7 +863,7 @@ function frequencySelectChanged() {
     let option = $("<option>");
     option.text(p.text);
     option.attr("value", p.value);
-    console.log(option);
+    // console.log(option);
     $("#frequencyCycleSelect").append(option);
   }
 }
