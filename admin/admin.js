@@ -26,54 +26,72 @@ function processAdminData() {
     adminData = snapshot.val();
     // console.log(adminData);
 
-    let users = [];
-    for (let d in adminData.users) {
-      for (let u in adminData.users[d]) {
-        users.push({
-          name: adminData.users[d][u].name,
-          email: adminData.users[d][u].email,
-          last_login: (new Date(adminData.users[d][u].last_login)).toLocaleString(),
-          uid: adminData.users[d][u].uid,
-          schedules: adminData.users[d][u].schedules == null ? 0 : Object.keys(adminData.users[d][u].schedules).length,
-          domain: fbUnsafe(d),
-          account_created: (new Date(adminData.users[d][u].account_created)).toLocaleString(),
-        });
-      }
-    }
+
 
     /******************
         Users Tab
     ******************/
-    if (users.length != 0) {
-      let table = $('<table class="table table-sm">');
-      let head = $("<thead>");
-      let headtr = $("<tr>");
-      head.append(headtr);
-      table.append(head);
-      let userProps = Object.keys(users[0]);
-      // console.log(users)
-      for (let p of userProps) {
-        let th = $('<th scope="col"></th>');
-        th.text(beautifySnakeCase(p));
-        headtr.append(th);
+    if (adminData.length != 0) {
+      let sel = $('<select class="form-select form-select-lg mb-3" aria-label="Users Select" id="usersSelect"><option selected disabled>Select a domain...</option></select>');
+      for(let dom in adminData.users) {
+        // <option value="1">One</option>
+        let opt = $('<option>');
+        opt.text(fbUnsafe(dom));
+        opt.attr('value', dom);
+        sel.append(opt);
       }
-      let body = $("<tbody>");
-      table.append(body);
-      $("#users").append(table);
+      let ltd = $('<div class="container" id="userTableDiv"></div>');
       
-      //I want this to sort users by domain and then name, but no luck so far.
-      users.sort((a, b) => {
-        return b.domain - a.domain || a.name - b.name;
-      })
-      for (let user of users) {
-        let row = $("<tr>");
-        for (let p of userProps) {
-          let td = $("<td>");
-          td.text(user[p]);
-          row.append(td);
+      sel.change((e) => {
+        $("#userTableDiv").empty();
+        let users = [];
+        let dom = $(e.target).find(":selected").val();
+        for (let u in adminData.users[dom]) {
+          users.push({
+            name: adminData.users[dom][u].name,
+            email: adminData.users[dom][u].email,
+            last_login: (new Date(adminData.users[dom][u].last_login)).toLocaleString(),
+            uid: adminData.users[dom][u].uid,
+            schedules: adminData.users[dom][u].schedules == null ? 0 : Object.keys(adminData.users[dom][u].schedules).length,
+            domain: fbUnsafe(dom),
+            account_created: (new Date(adminData.users[dom][u].account_created)).toLocaleString(),
+          });
         }
-        body.append(row);
-      }
+      
+        let table = $('<table class="table table-sm">');
+        let head = $("<thead>");
+        let headtr = $("<tr>");
+        head.append(headtr);
+        table.append(head);
+        let userProps = Object.keys(users[0]);
+        // console.log(users)
+        for (let p of userProps) {
+          let th = $('<th scope="col"></th>');
+          th.text(beautifySnakeCase(p));
+          headtr.append(th);
+        }
+        let body = $("<tbody>");
+        table.append(body);
+
+        //I want this to sort users by domain and then name, but no luck so far.
+        users.sort((a, b) => {
+          return b.domain - a.domain || a.name - b.name;
+        })
+        for (let user of users) {
+          let row = $("<tr>");
+          for (let p of userProps) {
+            let td = $("<td>");
+            td.text(user[p]);
+            row.append(td);
+          }
+          body.append(row);
+        }
+        ltd.append(table);
+      });
+      $("#users").append($("<br>"))
+      $("#users").append(sel);
+      $("#users").append(ltd);
+      
     }
 
     /******************
