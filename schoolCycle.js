@@ -45,9 +45,7 @@ function gapiLoaded() {
 async function initializeGapiClient() {
   // console.log("initializeGapiClient()");
   // console.log(API_KEY);
-  // if(!API_KEY) {
-  //   return false;
-  // }
+
   await gapi.client.init({
     apiKey: API_KEY,
     discoveryDocs: [DISCOVERY_DOC],
@@ -61,7 +59,6 @@ function gisLoaded() {
   database.ref("/admin/").once("value", (snapshot) => {
     // console.log("read the admin information")
     let val = snapshot.val();
-    // console.log(val)
     CLIENT_ID = val.client_id;
     API_KEY = val.api_key;
     
@@ -70,7 +67,6 @@ function gisLoaded() {
       return false
     }
     
-    // console.log("gisLoaded()");
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
@@ -85,7 +81,6 @@ function gisLoaded() {
 //If any of the external services don't load properly, display 
 function googleServicesAreLoaded() {
   // console.log("googleServicesAreLoaded()");
-  // console.log(gisInited, gapiInited, fbInited);
   if(!gisInited) $("#gisStatus").text("Google Identity Service is not loaded.");
   if(!gapiInited) $("#gapiStatus").text("Google API is not loaded.");
   if(!fbInited) $("#fbStatus").text("Firebase is not loaded.");
@@ -170,7 +165,6 @@ $(() => {
     let provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider).then((result) => {
     }).catch((error) => {
-      // console.log("Sign In Error.", error);
       displayLogin();
     });
   });
@@ -197,13 +191,11 @@ function getTableValues() {
   let values = [];
   
   let sameTime = true;
-  // console.log($("#sameTimeCheckbox"));
   if($("#sameTimeCheckbox")[0] != null) {
     sameTime = $("#sameTimeCheckbox").is(":checked")
   } else {
     sameTime = domain.selectedDefault.sameTimes;
   }
-  // console.log(sameTime);
   
   if(sameTime) {
     let headers = []
@@ -237,7 +229,6 @@ function getTableValues() {
     });
   }
   
-  // console.log(values);
   
   // Check that start is before end
   for(let i = 1; i < values.length; i++) {

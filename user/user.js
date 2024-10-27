@@ -4,35 +4,28 @@ function displayMain(USER) {
   processUser(USER);
   let DOMAIN = user.email;
   DOMAIN = DOMAIN.substring(DOMAIN.indexOf("@") + 1);
-  // console.log(DOMAIN);
-  // console.log(safeDomain(DOMAIN));
   database.ref("/users/" + safeDomain(DOMAIN) + "/" + user.uid).once("value", (snapshot) => {
     if(snapshot.val() == null) {
       database.ref("/users/" + safeDomain(DOMAIN) + "/" + user.uid).set({
         email: user.email,
         name: user.displayName,
-        uid: user.uid
+        uid: user.uid,
+        account_created: (new Date).getTime()
       })
     }
   });
     
   database.ref("/domain/" + safeDomain(DOMAIN)).once("value", (snapshot) => {
-    // console.log("read the domain information")
     domain = snapshot.val();
     if(domain == null) {
-      // console.log("Null Domain");
       return false;
     }
     domain.name = DOMAIN;
     processDomainData();
   }, (error) => {
-    // console.log(error);
     if(error.code == "PERMISSION_DENIED") {
       $("#expiredModal").modal("show");
     }
-    // console.log(error.code);
-    // console.log(error.name);
-    // console.log(error.message);
   });
   $('#loginModule').hide();
   $('#loggedInAs').text(user.displayName);
@@ -43,11 +36,14 @@ function displayMain(USER) {
 function processUser(USER) {
   // console.log("processUser()");
   let safeD = safeDomain(USER.email)
+  let now = new Date()
   let u = {
     name: USER.displayName,
     email: USER.email,
     domain: safeD,
-    uid: USER.uid
+    uid: USER.uid,
+    account_created: now.getTime(),
+    last_login: now.getTime()
   }
 
   let users = database.ref('users/' + u.domain + "/" + u.uid);
@@ -61,6 +57,7 @@ function processUser(USER) {
       });
     } else {
       user.schedules = data.schedules;
+      database.ref('users/' + u.domain + '/' + u.uid + '/last_login').set(now.getTime());
       // updateScheduleDropDown()
     }
   });
@@ -71,7 +68,21 @@ function processUser(USER) {
     if(data == null) {
       d.set({
         administrators: "",
-        expiration: 0,
+        expiration: now.getTime() - 1000*60*60*48,
+        cycle_calendar_id: "",
+        cycle_days: "",
+        default_schedules: ""
+      }).then(() => {
+        log("Created new domain: " + fbUnsafe(safeD));
+      }).catch((error) => {
+        log("Failed to create new domain: " + fbUnsafe(safeD) + ". Error: " + JSON.stringify(error));
+      });
+    }
+  }, (error) => {
+    if(error.code == "PERMISSION_DENIED") {
+      d.set({
+        administrators: "",
+        expiration: now.getTime() - 1000*60*60*48,
         cycle_calendar_id: "",
         cycle_days: "",
         default_schedules: ""
@@ -87,10 +98,7 @@ function processUser(USER) {
 function processDomainData() {
   // console.log("processDomainData()");
   let expiration = new Date(domain.expiration);
-  // console.log(expiration)
   if(expiration < (new Date())) {
-    // console.log("EXPIRED!");
-    // $("#authorizeModal").modal('hide');
     $("#expiredModal").modal("show");
     const token = gapi.client.getToken();
     if (token !== null) {
@@ -103,17 +111,14 @@ function processDomainData() {
   scheds = scheds.sort();
   $("#defaultSelector").empty()
   if(scheds.length == 0) {
-    // console.log("NO SCHEDULES!");
     $("#multipleDefaultSchedules").text("Your school has not created any schedules. Check in with an administrator.");
   } else if (scheds.length == 1) {
-    // console.log("generating domain schedules")
     for(let sched of scheds) {
       let opt = $("<option>").text(fbUnsafe(sched))
       $("#defaultSelector").append(opt)
     }
     domain.selectedDefault = domain.default_schedules[scheds[0]];
   } else {
-    // console.log("generating domain schedules")
     $("#multipleDefaultSchedules").text("Your school has multiple possible schedules. Select the one that applies to you.");
     for(let sched of scheds) {
       let opt = $("<option>").text(fbUnsafe(sched))
@@ -209,7 +214,6 @@ function updateCalendarSelectors(calendars, selected) {
   // console.log("updateCalendarSelectors()")
   calendars = calendars.sort((a,b) => { return a.summary - b.summary })
   for(let cal of calendars) {
-    // console.log(cal);
     let opt = $("<option>")
     opt.text(cal.summary)
     opt.attr("value", cal.id)
@@ -327,7 +331,6 @@ function addEventsButton() {
         let start = entered_events[day_table][slot][0];
         let end = entered_events[day_table][slot][1];
         let isoString = date.date.toISOString().substring(0, 10)
-        // console.log(title, start, end);
         user.potential_events.push({
           title: title,
           start: new Date(isoString + " " + start),
@@ -339,13 +342,12 @@ function addEventsButton() {
       }
     }
   }
-  // console.log(user.potential_events);
+  
   $("#totalEvents").text("You are attempting to add " + user.potential_events.length + " events between " + start.toLocaleDateString() + " and " + end.toLocaleDateString() + " to the calendar '" + $('#scheduleTabCalendarSelector').find(':selected').text() + "'");
   // populateCalendar(potential_events, calId);
   
   getCurrentEvents(start, end).then(
     function(current_events) { 
-      // console.log(current_events);
       
       user.new_events = []
       
@@ -359,13 +361,11 @@ function addEventsButton() {
           let current_start = new Date(current_events[j].start.dateTime);
           let current_end = new Date(current_events[j].end.dateTime);
           if(potential_title == current_title && potential_start.toISOString() == current_start.toISOString() && potential_end.toISOString() == current_end.toISOString()) {
-            // console.log("FOUND")
             found = true;
             break;
           }
         }
         if(!found) {
-          // console.log(user.potential_events[i]);
           user.new_events.push(user.potential_events[i])
         }
       }
@@ -375,10 +375,6 @@ function addEventsButton() {
       if(user.new_events.length > 0) {
         $("#populateButton").removeAttr("disabled");   
       }
-      
-      // user.potential_events = null;
-      // user.new_events = null;
-      // user.calId = null
     },
     function(error) { return error }
   );
@@ -390,7 +386,6 @@ function populateCalendar() {
   $("#addEventsButton").attr("disabled", "disabled")
   const batch = gapi.client.newBatch();
   for(let event of user.new_events) {
-    // console.log(event);
     let e = {
       'summary': event.title,
       'description': event.description,
@@ -423,7 +418,6 @@ function populateCalendar() {
   batch.execute((es) => {
     let errorCount = 0;
     for(let i in es) {
-      // console.log(events[i]);
       let e = es[i]
       if(e.error != null) {
         errorCount++;
@@ -703,8 +697,6 @@ function saveScheduleAs() {
     // log("Created new schedule: " + name)
     alert($("#manage-alert-container"), "Created new schedule: " + fbUnsafe(name), "success");
     if(user.schedules == null) user.schedules = {};
-    // console.log("TESTESTEST");
-    // console.log(user)
     user.schedules[name] = {
     entries: JSON.stringify(values),
     sameTimes: domain.selectedDefault.sameTimes
@@ -864,7 +856,6 @@ function frequencySelectChanged() {
     }],
   ]
   let period = periods[frequency]
-  // console.log(period)
   $("#frequencyCycleSelect").empty()
   for(let p of period) {
     let option = $("<option>");
@@ -888,10 +879,7 @@ function generateMultitable() {
 
   // Create table data rows
   for (let i = 0; i < 10; i++) {
-    const dataRow = $("<tr>");
-    // const periodCell = $("<td><select class='periodSelect' row='" + i + "'><option>Cyclic</option><option>Bi-Cyclic</option><option>Tri-Cyclic</option><option>Tetra-Cyclic</option></select></td>");
-    // const cycleCell = $("<td><select class='cycleSelect' row='" + i + "'><option>Every Cycle</option></select></td>");
-    const dayCell = $("<td>")
+    const dataRow = $("<tr>");const dayCell = $("<td>")
     const daySelect = $("<select class='daySelect multicycle-day' row='" + i + "' id='multi_cell_day-" + i + "'>")
     let days = domain.cycle_days.split(", ")
     for(let day of days) {
@@ -973,7 +961,6 @@ function getMultiTable() {
       guests: guest_emails
     })
   }
-  // console.log(rows);
   return rows
   
 }
@@ -991,14 +978,12 @@ function addMultiEventsButton() {
     return false
   }
   
-  // console.log(start, end);
   user.calId = $('#multiCalendarSelector').find(':selected').val()
   
   let date_range = [];
   for(let e of domain.cycle_day_events) {
     let d = new Date(e.start.date);
     d = new Date(d.getTime() + d.getTimezoneOffset() * 1000 * 60)
-    // console.log(e);
     let day = e.summary;
     if(!e.description) continue;
     if(e.description.length < 7) continue;
@@ -1014,24 +999,17 @@ function addMultiEventsButton() {
     }
   }
   
-  // console.log(date_range);  
   let entered_events = getMultiTable();
   if(entered_events == false) return false;
-  // console.log(entered_events);
   
   let divisor = parseInt($("#frequencySelect").find(':selected').attr("value"))+1;
   let remainder = parseInt($("#frequencyCycleSelect").find(':selected').attr("value"));
-  // console.log(divisor, remainder);
   
   $('#populateModal').modal('show')
   
   user.potential_events = [];
   for(let date of date_range) {
     for(let event of entered_events) {
-      // console.log("Date", date);
-      // console.log("Event", event);
-      // console.log(date.cycle, divisor, remainder, date.cycle % divisor != remainder)
-      // console.log(event.day, date.day, event.day !== date.day)
       if(date.cycle % divisor != remainder) continue;
       if(event.day !== date.day) continue;
       let isoString = date.date.toISOString().substring(0, 10)
@@ -1045,13 +1023,10 @@ function addMultiEventsButton() {
       })
     }
   }
-  // console.log(user.potential_events);
   $("#totalEvents").text("You are attempting to add " + user.potential_events.length + " events between " + start.toLocaleDateString() + " and " + end.toLocaleDateString() + ".");
-  // populateCalendar(potential_events, calId);
   
   getCurrentEvents(start, end).then(
     function(current_events) { 
-      // console.log(current_events);
       
       user.new_events = []
       
@@ -1065,13 +1040,11 @@ function addMultiEventsButton() {
           let current_start = new Date(current_events[j].start.dateTime);
           let current_end = new Date(current_events[j].end.dateTime);
           if(potential_title == current_title && potential_start.toISOString() == current_start.toISOString() && potential_end.toISOString() == current_end.toISOString()) {
-            // console.log("FOUND")
             found = true;
             break;
           }
         }
         if(!found) {
-          // console.log(user.potential_events[i]);
           user.new_events.push(user.potential_events[i])
         }
       }
@@ -1081,10 +1054,6 @@ function addMultiEventsButton() {
       if(user.new_events.length > 0) {
         $("#populateButton").removeAttr("disabled");   
       }
-      
-      // user.potential_events = null;
-      // user.new_events = null;
-      // user.calId = null
     },
     function(error) { return error }
   );
@@ -1108,7 +1077,7 @@ function getEventsToEdit() {
   let end = new Date($("#endDateEdit").val())
   end = new Date(end.getTime() + end.getTimezoneOffset() * 1000 * 60 + 1000*60*60*23 + 1000*60*59)
   user.calId = $('#editTabCalendarSelector').find(':selected').val()
-  // console.log(start, end, user.calId)
+
   
   
   getCurrentEvents(start, end, false).then(
@@ -1132,7 +1101,6 @@ function getEventsToEdit() {
         option.text(event)
         $("#editTabEventSelector").append(option)
       }
-      // $('#editTabEventSelector').removeAttr("disabled");
     },
     function(error) { return error }
   );
@@ -1218,7 +1186,6 @@ function batchEventEdits() {
       user.to_edit = current_events;
       user.to_edit_changes = changes;
       for(let event of current_events) {
-        // console.log(event);
 
         gapi.client.calendar.events.get({"calendarId": user.calId, "eventId": event.id}).then((e) => {
           let d = e.result;
@@ -1240,7 +1207,6 @@ function batchEventEdits() {
             "title": "SchoolCycle",
             "url": "https://schoolcycle.app"
           }
-          // console.log(d);
           let request = gapi.client.calendar.events.patch({
             'calendarId': user.calId,
             'eventId': d.id,
@@ -1275,7 +1241,6 @@ function runBatchedEdits() {
     user.batch_edit.execute((es) => {
     let errorCount = 0;
     for(let i in es) {
-      // console.log(events[i]);
       let e = es[i]
       if(e.error != null) {
         errorCount++;
@@ -1441,7 +1406,6 @@ function deleteEvents() {
   batch.execute((es) => {
     let errorCount = 0;
     for(let i in es) {
-      // console.log(events[i]);
       let e = es[i]
       if(e.error != null) {
         errorCount++;
