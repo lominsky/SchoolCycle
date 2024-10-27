@@ -25,6 +25,14 @@ function displayMain(USER) {
     }
     domain.name = DOMAIN;
     processDomainData();
+  }, (error) => {
+    // console.log(error);
+    if(error.code == "PERMISSION_DENIED") {
+      $("#expiredModal").modal("show");
+    }
+    // console.log(error.code);
+    // console.log(error.name);
+    // console.log(error.message);
   });
   $('#loginModule').hide();
   $('#loggedInAs').text(user.displayName);
@@ -96,6 +104,7 @@ function processDomainData() {
   $("#defaultSelector").empty()
   if(scheds.length == 0) {
     // console.log("NO SCHEDULES!");
+    $("#multipleDefaultSchedules").text("Your school has not created any schedules. Check in with an administrator.");
   } else if (scheds.length == 1) {
     // console.log("generating domain schedules")
     for(let sched of scheds) {

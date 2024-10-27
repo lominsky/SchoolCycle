@@ -10,6 +10,14 @@ function displayMain() {
     domain.name = DOMAIN;
     if(!Object.values(domain.administrators).includes(user.email)) location.pathname = "/";
     processDomainData();
+  }, (error) => {
+    // console.log(error);
+    if(error.code == "PERMISSION_DENIED") {
+      $("#expiredModal").modal("show");
+    }
+    // console.log(error.code);
+    // console.log(error.name);
+    // console.log(error.message);
   })
   $("#loginModule").hide();
   $("#loggedInAs").text(user.displayName);
