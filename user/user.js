@@ -42,8 +42,8 @@ function processUser(USER) {
     email: USER.email,
     domain: safeD,
     uid: USER.uid,
-    account_created: now.getTime(),
-    last_login: now.getTime()
+    account_created: firebase.database.ServerValue.TIMESTAMP,
+    last_login: firebase.database.ServerValue.TIMESTAMP
   }
 
   let users = database.ref('users/' + u.domain + "/" + u.uid);
