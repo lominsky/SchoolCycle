@@ -2,7 +2,7 @@
 let adminData;
 
 function authCallback() {
-  console.log("Authorization is done, but no need for a callback?");
+  // console.log("Authorization is done, but no need for a callback?");
 }
 
 //Displays the main screen and hides the login button
@@ -24,7 +24,7 @@ function displayLogin() {
 function processAdminData() {
   database.ref("/").once("value", (snapshot) => {
     adminData = snapshot.val();
-    console.log(adminData);
+    // console.log(adminData);
 
     let users = [];
     for (let d in adminData.users) {
@@ -32,9 +32,11 @@ function processAdminData() {
         users.push({
           name: adminData.users[d][u].name,
           email: adminData.users[d][u].email,
+          last_login: (new Date(adminData.users[d][u].last_login)).toLocaleString(),
           uid: adminData.users[d][u].uid,
           schedules: adminData.users[d][u].schedules == null ? 0 : Object.keys(adminData.users[d][u].schedules).length,
           domain: fbUnsafe(d),
+          account_created: (new Date(adminData.users[d][u].account_created)).toLocaleString(),
         });
       }
     }
@@ -52,7 +54,7 @@ function processAdminData() {
       // console.log(users)
       for (let p of userProps) {
         let th = $('<th scope="col"></th>');
-        th.text(p);
+        th.text(beautifySnakeCase(p));
         headtr.append(th);
       }
       let body = $("<tbody>");

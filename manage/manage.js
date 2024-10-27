@@ -11,13 +11,9 @@ function displayMain() {
     if(!Object.values(domain.administrators).includes(user.email)) location.pathname = "/";
     processDomainData();
   }, (error) => {
-    // console.log(error);
     if(error.code == "PERMISSION_DENIED") {
       $("#expiredModal").modal("show");
     }
-    // console.log(error.code);
-    // console.log(error.name);
-    // console.log(error.message);
   })
   $("#loginModule").hide();
   $("#loggedInAs").text(user.displayName);
@@ -35,8 +31,6 @@ function displayLogin() {
 function processDomainData() {
     let expiration = new Date(domain.expiration);
     if(expiration < (new Date())) {
-    // console.log("EXPIRED!");
-    // $("#authorizeModal").modal('hide');
     $("#expiredModal").modal("show");
     const token = gapi.client.getToken();
     if (token !== null) {
@@ -48,7 +42,13 @@ function processDomainData() {
   
   $("#domain-expiration").val(timestampToInputDateString(domain.expiration))
   $("#domain-administrators").val(Object.values(domain.administrators).toString())
-  $("#domain-calendar-id").append($("<option selected id='starter-cal-id-option'>").text(domain.cycle_calendar_id))
+  if(domain.cycle_calendar_id == "") {  
+    $("#domain-calendar-id").append($("<option selected disabled id='no-cal-id-option'>").text("Select a calendar..."));
+  } else {
+    $("#domain-calendar-id").append($("<option selected id='starter-cal-id-option'>").text(domain.cycle_calendar_id))
+  }
+  
+  
   updateScheduleDropDown();
 }
 
@@ -188,7 +188,6 @@ daysCSV.addEventListener('change', (e) => {
 //Process the uploaded file
 let newDays = [];
 function processDaysCSV(csv) {
-  // console.log(csv)
   let start = "Date,Day of Week,Cycle # (e.g. 1 2 3),Cycle Day (e.g. Day 1 Day 2 Day 3)";
   daysCSV.value = '';
   if(csv.substring(0, start.length) != start) {
@@ -243,7 +242,9 @@ function processDaysCSV(csv) {
   today = new Date(today.getTime() - 1000*60*60*24);
   
   getCurrentCycleDays().then((response) => {
-    let existingDays = response.result.items;
+    let existingDays = [];
+    if(response && response.result)
+      existingDays = response.result.items;
     let passedDays = 0;
     let existingCount = 0;
     for(let day of days) {
@@ -294,6 +295,7 @@ function processDaysCSV(csv) {
 
 //Get the cycle days that are already in the calendar
 async function getCurrentCycleDays() {
+  if(domain.cycle_calendar_id == "") return false;
   let response;
   try {
     let now = new Date();
@@ -348,7 +350,6 @@ function populateCycleCalendar() {
   batch.execute((events) => {
     let errorCount = 0;
     for(let i in events) {
-      // console.log(events[i]);
       let event = events[i]
       if(event.error != null) {
         errorCount++;
@@ -378,6 +379,7 @@ function populateCycleCalendar() {
 
 //Get the possible days from the selected calendar
 function getEligibleDays() {
+  if(domain.cycle_calendar_id == "") return false;
   $("#manage-schedule-row").hide();
   let currentDays = domain.cycle_days.split(", ").sort();
   $("#daySelectButtons").empty();
@@ -531,11 +533,6 @@ function generateScheduler() {
     $("#differentTimesDayRadio").show()
     $("#differentTimesDayRadio > div").empty();
     for(let i in cycleDays) {
-      // let inputRadio = $('<input type="radio" class="btn-check" name="daySelectorRadio" id="dayRadio' + i + '" autocomplete="off">');
-      // if(i == 0) inputRadio.attr("checked", "checked")
-      // let label = $('<label class="btn btn-outline-primary" for="dayRadio' + i + '">' + cycleDays[i] + '</label>');
-      // $("#differentTimesDayRadio > div").append(inputRadio, label);
-      
       let row = $('<div class="row mb-3">')
       let col = $('<div class="col" style="text-align:center;">')
       
